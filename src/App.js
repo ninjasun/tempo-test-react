@@ -1,17 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 
-const TEAM_URL = "https://tempo-exercises.herokuapp.com/rest/v1/teams";
+const TEAMS_URL = "https://tempo-exercises.herokuapp.com/rest/v1/teams";
+const USERS_URL = "https://tempo-exercises.herokuapp.com/rest/v1/users";
 
 
-function TeamCard({id, teamLead, name}) {
+const TeamCard = ({team}) => {
+
   const [ userList , setUserList ] = useState([]);
   const [ teamLeadName, setTeamLead ] = useState('');
+  const [ loading, setLoading ] = useState('');
 
+  useEffect(() => {
+    const fetchTeamLead = async () => {
+      if(!team.teamLead) return
+      setLoading(true);
+      try {
+        const res = await (await fetch(USERS_URL+"/"+team.teamLead)).json();
+        console.log("TeamLead: ", res)
+        if (res) {
+          setTeamLead(res.name);
+          setLoading(false);
+        }
+      }
+      catch (e) {
+        setLoading(false)
+      }
+    }
+    fetchTeamLead()
+  }, [team])
+ 
   return (
     <div className="team-container" >
-      <h2>{name}</h2>
-      <h6>teamLead</h6>
+      <h2>{team.name}</h2>
+      <h6>Leader: {teamLeadName.first} - {teamLeadName.last}</h6>
       <ul>
         {userList.map(({name, id}) => <p key={id}>{name.first} - {name.last}</p>)}
       </ul>
@@ -29,13 +51,12 @@ function App() {
     const fetchTeams = async () => {
       setLoading(true);
       try {
-        const res = await (await fetch(TEAM_URL)).json();
+        const res = await (await fetch(TEAMS_URL)).json();
         console.log("TEAMS: ", res)
         if (res) {
           setTeams(res);
           setLoading(false);
         }
-
       }
       catch (e) {
         setError(e)
