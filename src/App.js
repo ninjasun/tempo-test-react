@@ -1,42 +1,94 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, } from 'react';
 import './App.css';
 
 const TEAMS_URL = "https://tempo-exercises.herokuapp.com/rest/v1/teams";
 const USERS_URL = "https://tempo-exercises.herokuapp.com/rest/v1/users";
 
 
-const TeamCard = ({team}) => {
-
-  const [ userList , setUserList ] = useState([]);
-  const [ teamLeadName, setTeamLead ] = useState('');
-  const [ loading, setLoading ] = useState('');
+const User = ({id}) => {
+  console.log("here: ", id)
+  const [user, setUser] = useState({
+    first: '', last: ''
+  });
 
   useEffect(() => {
-    const fetchTeamLead = async () => {
-      if(!team.teamLead) return
-      setLoading(true);
+    const fetchUser = async () => {
+      if (!id) return
       try {
-        const res = await (await fetch(USERS_URL+"/"+team.teamLead)).json();
-        console.log("TeamLead: ", res)
-        if (res) {
-          setTeamLead(res.name);
-          setLoading(false);
+        const user = await (await fetch(USERS_URL + "/" + id)).json();
+        console.log("user: ", user)
+        if (user) {
+          setUser({
+            first: user.name.first, last: user.name.last
+          });
+
         }
       }
       catch (e) {
-        setLoading(false)
+
+      }
+    }
+    fetchUser()
+  }, [id]);
+
+  return (
+    <li className="user">
+      <p >{user.first} - {user.last}</p>
+    </li>
+
+  )
+}
+
+const TeamCard = ({ team }) => {
+
+  const [teamLeadName, setTeamLead] = useState('');
+  const [loading, setLoading] = useState('');
+  const [userIds, setUserIds] = useState([]);
+
+  useEffect(() => {
+    const fetchTeamLead = async () => {
+      if (!team.teamLead) return
+      try {
+        const res = await (await fetch(USERS_URL + "/" + team.teamLead)).json();
+        console.log("TeamLead: ", res)
+        if (res) {
+          setTeamLead(res.name);
+        }
+      }
+      catch (e) {
+
       }
     }
     fetchTeamLead()
-  }, [team])
- 
+  }, [team ])
+
+  useEffect(() => {
+    const fetchUserIds = async () => {
+      try {
+        const data = await (await fetch(USERS_URL)).json();
+        //console.log("USERS: " + data + " team: ", team.name)
+        if (data) {
+          const ids = data.filter((p) => p.teamId === team.id);
+          //console.log("user id list for this team: ", ids)
+          setUserIds(ids)
+        }
+      }
+      catch (e) {
+      }
+    }
+
+    fetchUserIds()
+  }, [ team])
+
   return (
     <div className="team-container" >
       <h2>{team.name}</h2>
       <h6>Leader: {teamLeadName.first} - {teamLeadName.last}</h6>
-      <ul>
-        {userList.map(({name, id}) => <p key={id}>{name.first} - {name.last}</p>)}
-      </ul>
+      <div>
+        {userIds.map((user) => (
+          <User key={user.userId} id={user.userId} />
+        ))}
+      </div>
     </div>
   )
 }
@@ -63,6 +115,7 @@ function App() {
         setLoading(false)
       }
     }
+
     fetchTeams()
   }, [])
 
@@ -70,7 +123,7 @@ function App() {
     <div className="App">
       {loading && <p>loading..</p>}
       {teams.map((team) => (
-          <TeamCard team={team} key={team.id}/>
+        <TeamCard team={team} key={team.id} />
       ))}
 
     </div>

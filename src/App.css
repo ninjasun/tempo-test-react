@@ -10,8 +10,25 @@
   padding:20px;
   width: 350px;
   height: 400px;
+  overflow: hidden;
+  white-space: nowrap; 
+  text-overflow: ellipsis;
+  overflow-y: scroll;
 }
 
 .team-container h2 {
   color: brown;
 }
+
+.user{
+  display: block;
+  padding: 2px;
+  margin: 2px;
+  border: 1px solid orange;
+}
+
+.user p{
+  margin: 2px;
+  font-size: 14px;
+}
+
