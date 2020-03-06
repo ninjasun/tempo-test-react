@@ -1,103 +1,26 @@
 import React, { useEffect, useState, } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
+import TeamCard from './components/TeamCard';
+import Nav from 'react-bootstrap/Nav';
+import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
+import Tab from 'react-bootstrap/Tab';
+import Container from 'react-bootstrap/Container';
+import Spinner from 'react-bootstrap/Spinner'
+import TeamDetails from './components/TeamDetails';
 
 const TEAMS_URL = "https://tempo-exercises.herokuapp.com/rest/v1/teams";
-const USERS_URL = "https://tempo-exercises.herokuapp.com/rest/v1/users";
 
 
-const User = ({id}) => {
-  console.log("here: ", id)
-  const [user, setUser] = useState({
-    first: '', last: ''
-  });
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!id) return
-      try {
-        const user = await (await fetch(USERS_URL + "/" + id)).json();
-        console.log("user: ", user)
-        if (user) {
-          setUser({
-            first: user.name.first, last: user.name.last
-          });
-
-        }
-      }
-      catch (e) {
-
-      }
-    }
-    fetchUser()
-  }, [id]);
-
-  return (
-    <li className="user">
-      <p >{user.first} - {user.last}</p>
-    </li>
-
-  )
-}
-
-const TeamCard = ({ team }) => {
-
-  const [teamLeadName, setTeamLead] = useState('');
-  const [loading, setLoading] = useState('');
-  const [userIds, setUserIds] = useState([]);
-
-  useEffect(() => {
-    const fetchTeamLead = async () => {
-      if (!team.teamLead) return
-      try {
-        const res = await (await fetch(USERS_URL + "/" + team.teamLead)).json();
-        console.log("TeamLead: ", res)
-        if (res) {
-          setTeamLead(res.name);
-        }
-      }
-      catch (e) {
-
-      }
-    }
-    fetchTeamLead()
-  }, [team ])
-
-  useEffect(() => {
-    const fetchUserIds = async () => {
-      try {
-        const data = await (await fetch(USERS_URL)).json();
-        //console.log("USERS: " + data + " team: ", team.name)
-        if (data) {
-          const ids = data.filter((p) => p.teamId === team.id);
-          //console.log("user id list for this team: ", ids)
-          setUserIds(ids)
-        }
-      }
-      catch (e) {
-      }
-    }
-
-    fetchUserIds()
-  }, [ team])
-
-  return (
-    <div className="team-container" >
-      <h2>{team.name}</h2>
-      <h6>Leader: {teamLeadName.first} - {teamLeadName.last}</h6>
-      <div>
-        {userIds.map((user) => (
-          <User key={user.userId} id={user.userId} />
-        ))}
-      </div>
-    </div>
-  )
-}
 
 function App() {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [activeTab, setActiveTab] = useState('first');
+  const [team, setTeam] = useState(null);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -121,10 +44,44 @@ function App() {
 
   return (
     <div className="App">
-      {loading && <p>loading..</p>}
-      {teams.map((team) => (
-        <TeamCard team={team} key={team.id} />
-      ))}
+      <Container>
+        {loading? (
+          <Spinner animation="border" role="status">
+            <span className="sr-only">Loading...</span>
+          </Spinner>
+          ) : (
+        <Tab.Container id="left-tabs-example" defaultActiveKey={activeTab} activeKey={activeTab} onSelect={k => setActiveTab(k)}>
+          <Row>
+            <Col sm={3}>
+              <Nav variant="pills" className="flex-column">
+                <Nav.Item>
+                  <Nav.Link eventKey="first">Team list</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="second">Discover</Nav.Link>
+                </Nav.Item>
+              </Nav>
+            </Col>
+            <Col sm={9}>
+              <Tab.Content>
+                <Tab.Pane eventKey="first">
+                  {teams.map((team) => (
+                    <TeamCard team={team} key={team.id} onClick={setActiveTab} handleTeam={setTeam}/>
+                  ))}
+                </Tab.Pane>
+                <Tab.Pane eventKey="second">
+                  <p onClick={()=>{setActiveTab('first')}}>vuoto</p>
+                </Tab.Pane>
+                <Tab.Pane eventKey="third">
+                  <p>cartico dettagli</p>
+                  <TeamDetails team={team}/>
+                </Tab.Pane>
+              </Tab.Content>
+            </Col>
+          </Row>
+        </Tab.Container>
+        )}
+      </Container>
 
     </div>
   );

@@ -1,19 +1,25 @@
 .App {
   text-align: center;
+  margin-top: 30px;
 }
 
 .team-container{
-  display: inline-block;
+  display: block;
   border: 2px solid salmon;
   background-color: antiquewhite;
-  margin: 20px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
   padding:20px;
-  width: 350px;
-  height: 400px;
+  width: 450px;
+  height: 100px;
   overflow: hidden;
   white-space: nowrap; 
   text-overflow: ellipsis;
-  overflow-y: scroll;
+  cursor: pointer;
+}
+.team-container:hover{
+  box-shadow: 1px 1px 1px 1px black;
 }
 
 .team-container h2 {
